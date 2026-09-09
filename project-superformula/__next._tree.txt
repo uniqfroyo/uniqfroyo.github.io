@@ -6,4 +6,4 @@
 :HL["/images/3dgraphics1.png","image"]
 :HL["/images/3dgraphics2.png","image"]
 :HL["/images/3dgraphics3.gif","image"]
-0:{"buildId":"5-60eGsNYI5Cj6fFaqPQh","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"project-superformula","paramType":null,"paramKey":"project-superformula","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
+0:{"buildId":"uKkPzr7G9dPxua9MH6siV","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"project-superformula","paramType":null,"paramKey":"project-superformula","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}

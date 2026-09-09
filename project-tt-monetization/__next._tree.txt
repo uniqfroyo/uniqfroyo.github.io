@@ -8,4 +8,4 @@
 :HL["/images/am5.png","image"]
 :HL["/images/tiktok-monetization.png","image"]
 :HL["/images/am7.png","image"]
-0:{"buildId":"5-60eGsNYI5Cj6fFaqPQh","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"project-tt-monetization","paramType":null,"paramKey":"project-tt-monetization","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
+0:{"buildId":"uKkPzr7G9dPxua9MH6siV","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"project-tt-monetization","paramType":null,"paramKey":"project-tt-monetization","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
