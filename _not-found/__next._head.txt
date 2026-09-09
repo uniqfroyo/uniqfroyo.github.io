@@ -1,8 +1,8 @@
 1:"$Sreact.fragment"
-2:I[89836,["/_next/static/chunks/d72c7e7e5d20b33c.js","/_next/static/chunks/2093ce5e17f255e2.js","/_next/static/chunks/cc1c88799edfe106.js"],"ViewportBoundary"]
-4:I[89836,["/_next/static/chunks/d72c7e7e5d20b33c.js","/_next/static/chunks/2093ce5e17f255e2.js","/_next/static/chunks/cc1c88799edfe106.js"],"MetadataBoundary"]
+2:I[60498,["/_next/static/chunks/562c4763075b7686.js","/_next/static/chunks/a31b31a5665697e7.js","/_next/static/chunks/bcce1a67e079ffc6.js"],"ViewportBoundary"]
+4:I[60498,["/_next/static/chunks/562c4763075b7686.js","/_next/static/chunks/a31b31a5665697e7.js","/_next/static/chunks/bcce1a67e079ffc6.js"],"MetadataBoundary"]
 5:"$Sreact.suspense"
-7:I[76629,["/_next/static/chunks/d72c7e7e5d20b33c.js","/_next/static/chunks/2093ce5e17f255e2.js","/_next/static/chunks/cc1c88799edfe106.js"],"IconMark"]
-0:{"buildId":"F4sscOkrMdeJCPqdeIVn9","rsc":["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L2",null,{"children":"$@3"}],["$","div",null,{"hidden":true,"children":["$","$L4",null,{"children":["$","$5",null,{"name":"Next.Metadata","children":"$@6"}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"loading":null,"isPartial":false}
+7:I[71270,["/_next/static/chunks/562c4763075b7686.js","/_next/static/chunks/a31b31a5665697e7.js","/_next/static/chunks/bcce1a67e079ffc6.js"],"IconMark"]
+0:{"buildId":"R7Qc3Ustw9aRmPiHTHYA8","rsc":["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L2",null,{"children":"$@3"}],["$","div",null,{"hidden":true,"children":["$","$L4",null,{"children":["$","$5",null,{"name":"Next.Metadata","children":"$@6"}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"loading":null,"isPartial":false}
 3:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
 6:[["$","title","0",{"children":"Froyo Dai - UX Designer"}],["$","meta","1",{"name":"description","content":"Froyo Dai personal portfolio showcasing creative work, experience, and photography."}],["$","meta","2",{"name":"generator","content":"v0.app"}],["$","link","3",{"rel":"icon","href":"/images/FavoriteIcon.svg","type":"image/svg+xml"}],["$","link","4",{"rel":"apple-touch-icon","href":"/apple-icon.png"}],["$","$L7","5",{}]]
