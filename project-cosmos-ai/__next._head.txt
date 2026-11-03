@@ -1,0 +1,8 @@
+1:"$Sreact.fragment"
+2:I[60498,["/_next/static/chunks/3bfdd8685df91b29.js","/_next/static/chunks/bcce1a67e079ffc6.js"],"ViewportBoundary"]
+4:I[60498,["/_next/static/chunks/3bfdd8685df91b29.js","/_next/static/chunks/bcce1a67e079ffc6.js"],"MetadataBoundary"]
+5:"$Sreact.suspense"
+7:I[71270,["/_next/static/chunks/3bfdd8685df91b29.js","/_next/static/chunks/bcce1a67e079ffc6.js"],"IconMark"]
+0:{"buildId":"8zucoR3Nn8frJUx1yAlFo","rsc":["$","$1","h",{"children":[null,["$","$L2",null,{"children":"$@3"}],["$","div",null,{"hidden":true,"children":["$","$L4",null,{"children":["$","$5",null,{"name":"Next.Metadata","children":"$@6"}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"loading":null,"isPartial":false}
+3:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+6:[["$","title","0",{"children":"Cosmos.AI — Froyo Dai"}],["$","meta","1",{"name":"description","content":"An AI infrastructure platform for discovering MCP servers, exploring tools, and working with plugins and skills."}],["$","meta","2",{"name":"generator","content":"v0.app"}],["$","link","3",{"rel":"icon","href":"/images/shared/FavoriteIcon.svg","type":"image/svg+xml"}],["$","link","4",{"rel":"apple-touch-icon","href":"/apple-icon.png"}],["$","$L7","5",{}]]
