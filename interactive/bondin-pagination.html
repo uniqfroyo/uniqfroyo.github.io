@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bondin pagination replica</title><style>body{margin:0;background:#fff;overflow:hidden}button{cursor:pointer}</style></head><body>
+<style>
+
+#bondin-replica { font-family: Arial, Helvetica, sans-serif; color:#111; }
+#bondin-replica .surface { box-sizing:border-box; height:100vh; display:flex; flex-direction:column; justify-content:center; background:#fff; padding:18px 20px; }
+#bondin-replica .dots { position:relative; display:flex; align-items:center; margin:0 -4px 16px; width:136px; height:26px; contain:size layout style; }
+#bondin-replica .dot-button { appearance:none; border:0; background:transparent; padding:10px 4px; margin:0; flex-shrink:0; line-height:0; }
+#bondin-replica .dot { display:block; width:6px; height:6px; border-radius:999px; background:rgba(0,0,0,.12); transition:background-color .15s; }
+#bondin-replica .puck { position:absolute; top:50%; left:0; margin-top:-3px; width:6px; height:6px; border-radius:999px; background:#000; pointer-events:none; will-change:transform; }
+#bondin-replica .quotes { display:grid; max-width:560px; }
+#bondin-replica .quote { grid-area:1/1; opacity:0; visibility:hidden; transition:opacity .2s cubic-bezier(.215,.61,.355,1),visibility 0s .2s; }
+#bondin-replica .quote[data-active] { opacity:1; visibility:visible; transition:opacity .2s cubic-bezier(.215,.61,.355,1); }
+#bondin-replica blockquote { margin:0 0 12px; font-size:clamp(17px,4vw,21px); line-height:1.4; letter-spacing:-.6px; }
+#bondin-replica .byline { margin:0; font-size:13px; line-height:1.4; }
+#bondin-replica .role { color:#737373; }
+#bondin-replica .dot-button:focus-visible { outline:2px solid #111; outline-offset:2px; border-radius:4px; }
+@media (hover:hover) and (pointer:fine) { #bondin-replica .dot-button:hover .dot { background:rgba(0,0,0,.3); } }
+@media (pointer:coarse) { #bondin-replica .dots { width:280px; height:44px; } #bondin-replica .dot-button { padding:19px 12px; } }
+@media (max-width:400px) { #bondin-replica .surface { padding:16px 18px; } }
+@media (prefers-reduced-motion:reduce) { #bondin-replica .quote { transition:opacity .2s; } }
+</style>
+<div id="bondin-replica"><div class="surface"><div class="dots" role="group" aria-label="Design principles"><button class="dot-button cursor-interaction" type="button" aria-label="Design principle 1: Steve Jobs"><span class="dot"></span></button><button class="dot-button cursor-interaction" type="button" aria-label="Design principle 2: Frank Chimero"><span class="dot"></span></button><button class="dot-button cursor-interaction" type="button" aria-label="Design principle 3: Design principle"><span class="dot"></span></button><button class="dot-button cursor-interaction" type="button" aria-label="Design principle 4: Mad Men"><span class="dot"></span></button><button class="dot-button cursor-interaction" type="button" aria-label="Design principle 5: Charles Eames"><span class="dot"></span></button><button class="dot-button cursor-interaction" type="button" aria-label="Design principle 6: Ludwig Mies van der Rohe"><span class="dot"></span></button><button class="dot-button cursor-interaction" type="button" aria-label="Design principle 7: Charles Eames"><span class="dot"></span></button><button class="dot-button cursor-interaction" type="button" aria-label="Design principle 8: Alina Wheeler"><span class="dot"></span></button><button class="dot-button cursor-interaction" type="button" aria-label="Design principle 9: Paul Rand"><span class="dot"></span></button><span class="puck" aria-hidden="true"></span></div><div class="quotes" aria-live="off"><div class="quote"><blockquote>Design is not just what it looks like and feels like. Design is how it works.</blockquote><p class="byline">Steve Jobs<span class="role">, Human-Centered & Experience Design</span></p></div><div class="quote"><blockquote>People ignore design that ignores people.</blockquote><p class="byline">Frank Chimero<span class="role">, Human-Centered & Experience Design</span></p></div><div class="quote"><blockquote>Good design is invisible.</blockquote><p class="byline">Design principle<span class="role">, Human-Centered & Experience Design</span></p></div><div class="quote"><blockquote>Make it simple, but significant.</blockquote><p class="byline">Mad Men<span class="role">, Human-Centered & Experience Design</span></p></div><div class="quote"><blockquote>The details are not the details. They make the design.</blockquote><p class="byline">Charles Eames<span class="role">, Details & Excellence</span></p></div><div class="quote"><blockquote>God is in the details.</blockquote><p class="byline">Ludwig Mies van der Rohe<span class="role">, Details & Excellence</span></p></div><div class="quote"><blockquote>Recognizing the need is the primary condition for design.</blockquote><p class="byline">Charles Eames<span class="role">, Details & Excellence</span></p></div><div class="quote"><blockquote>Design is intelligence made visible.</blockquote><p class="byline">Alina Wheeler<span class="role">, Innovation & Problem Solving</span></p></div><div class="quote"><blockquote>Design is the silent ambassador of your brand.</blockquote><p class="byline">Paul Rand<span class="role">, Innovation & Problem Solving</span></p></div></div></div></div>
+<script>
+
+(() => {
+  const root = document.getElementById('bondin-replica');
+  const rail = root.querySelector('.dots');
+  const buttons = [...root.querySelectorAll('.dot-button')];
+  const dots = buttons.map(button => button.querySelector('.dot'));
+  const puck = root.querySelector('.puck');
+  const quotes = [...root.querySelectorAll('.quote')];
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const DOT = 6, CAPSULE = 16, INTERVAL = 7000;
+  const style = getComputedStyle(buttons[0]);
+  const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+  const inset = dots[0].offsetLeft;
+  const widths = dots.map(() => DOT);
+  const pauseReasons = new Set();
+  let current = 0, frame = 0, generation = 0, timer = null;
+  let px = inset, py = 0, pw = DOT, sx = 1, sy = 1;
+  const mix = (a, b, t) => a + (b - a) * t;
+  const phase = (t, start, end) => Math.max(0, Math.min(1, (t-start)/(end-start)));
+  const cubicInOut = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+  const cubicOut = t => 1 - Math.pow(1-t, 3);
+  const sineInOut = t => (1-Math.cos(Math.PI*t))/2;
+  const sineOut = t => Math.sin(Math.PI*t/2);
+  const targetX = index => inset + widths.slice(0,index).reduce((sum,width) => sum+width+padding,0);
+  function paint() {
+    dots.forEach((dot,index) => { dot.style.width = `${widths[index]}px`; });
+    puck.style.width = `${pw}px`;
+    puck.style.transform = `translate(${px}px, ${py}px) scale(${sx}, ${sy})`;
+  }
+  function activate(index) {
+    quotes.forEach((quote,i) => {
+      quote.toggleAttribute('data-active',i===index);
+      quote.setAttribute('aria-hidden',String(i!==index));
+    });
+    buttons.forEach((button,i) => {
+      if(i===index) button.setAttribute('aria-current','true');
+      else button.removeAttribute('aria-current');
+    });
+  }
+  function setPaused(reason, paused) {
+    if(paused) pauseReasons.add(reason); else pauseReasons.delete(reason);
+    if(timer) { if(pauseReasons.size) timer.pause(); else timer.play(); }
+  }
+  function startProgress() {
+    // Keep the physical round end caps while the bar grows from 6px to 16px.
+    timer = puck.animate([{width:`${DOT}px`},{width:`${CAPSULE}px`}], {
+      duration:INTERVAL,easing:'linear',fill:'forwards'
+    });
+    if(pauseReasons.size) timer.pause();
+    timer.onfinish = () => jump((current+1)%dots.length);
+  }
+  function jump(index, instant=false) {
+    const ticket = ++generation;
+    // Preserve the live geometry when another click interrupts a jump.
+    const interrupted = timer === null;
+    const distance = Math.abs(inset+index*(DOT+padding)-px)/(DOT+padding);
+    const hops = interrupted ? distance : Math.max(1,distance);
+    const duration = reduced.matches || instant ? 0 : interrupted
+      ? 260+40*Math.min(hops,4) : 400+30*Math.min(hops-1,4);
+    const height = 4*Math.sqrt(hops);
+    const stretch = Math.min(.45,.2+.08*hops);
+    cancelAnimationFrame(frame);
+    pw = parseFloat(getComputedStyle(puck).width);
+    if(timer) timer.cancel();
+    timer=null;
+    const from={widths:[...widths],x:px,y:py,width:pw,sx,sy};
+    const travelStart=interrupted ? 0 : .2;
+    const travelEase=interrupted ? sineOut : sineInOut;
+    current=index;
+    let changed=false;
+    const started=performance.now();
+    function tick(now) {
+      if(ticket!==generation) return;
+      const t=duration ? Math.min(1,(now-started)/duration) : 1;
+      const collapse=cubicInOut(phase(t,0,.28));
+      const expand=cubicOut(phase(t,.72,1));
+      widths.forEach((_,i) => {
+        widths[i]=i===index ? mix(from.widths[i],CAPSULE,expand)
+          : mix(from.widths[i],DOT,collapse);
+      });
+      pw=mix(from.width,DOT,collapse);
+      const travel=phase(t,travelStart,.82);
+      px=mix(from.x,targetX(index),travelEase(travel));
+      py=mix(from.y,0,travel)-height*4*travel*(1-travel);
+      const airborne=interrupted ? Math.cos(Math.PI*travel/2) : Math.sin(Math.PI*travel);
+      const landing=Math.sin(Math.PI*phase(t,.78,.96));
+      const onset=phase(t,0,.15);
+      sx=mix(from.sx,(1+stretch*airborne)*(1+.3*landing),onset);
+      sy=mix(from.sy,(1-stretch*.5*airborne)*(1-.25*landing),onset);
+      if(!changed && t>=.3) {activate(index);changed=true;}
+      paint();
+      if(t<1) frame=requestAnimationFrame(tick); else startProgress();
+    }
+    frame=requestAnimationFrame(tick);
+  }
+  buttons.forEach((button,index) => button.addEventListener('click',event => {
+    if(index!==current) jump(index,event.detail===0);
+  }));
+  root.querySelector('.quotes').addEventListener('pointerenter',event => {
+    if(event.pointerType==='mouse') setPaused('hover',true);
+  });
+  root.querySelector('.quotes').addEventListener('pointerleave',() => setPaused('hover',false));
+  document.addEventListener('visibilitychange',() => setPaused('hidden',document.hidden));
+  new IntersectionObserver(([entry]) => setPaused('offscreen',!entry.isIntersecting),{threshold:.5}).observe(root);
+  setPaused('hidden',document.hidden);
+  setPaused('offscreen',true);
+  activate(0);paint();startProgress();
+})();
+</script>
+
+</body></html>
