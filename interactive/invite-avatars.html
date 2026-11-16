@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Invalid email ✨ — chips → avatars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+    "react-dom": "https://esm.sh/react-dom@18.3.1?external=react",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?external=react",
+    "motion/react": "https://esm.sh/motion@11.18.2/react?external=react,react-dom",
+    "htm": "https://esm.sh/htm@3.1.1"
+  }
+}
+</script>
+<style id="base-css">
+  /* "Nu" units below are converted to calc(var(--u) * Npx) at runtime,
+     so the whole component scales crisply with the viewport (1u = 1 css px in the video). */
+  :root { --u: 1; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: #fff;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    font-feature-settings: "cv11", "ss01" 0;
+    -webkit-font-smoothing: antialiased;
+    color: #171717;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    overflow: hidden; -webkit-tap-highlight-color:transparent;
+  }
+  #root { display: flex; flex-direction: column; align-items: center; }
+  .card {
+    position: relative;
+    width: 420u;
+    background: #fff;
+    border-radius: 24u;
+    padding: 22.5u 20u 20u;
+    box-shadow:
+      0 0 0 1u rgba(0,0,0,0.035),
+      0 1u 2u rgba(0,0,0,0.04),
+      0 10u 30u -6u rgba(0,0,0,0.07);
+  }
+  .title { font-size: 15.4u; line-height: 19u; font-weight: 500; letter-spacing: -0.005em; margin: 0; color: #171717; }
+  .sub { font-size: 12.75u; line-height: 18u; color: #777; margin: 6u 0 0; letter-spacing: -0.003em; }
+  .row { display: flex; align-items: center; justify-content: space-between; margin-top: 18u; height: 32u; }
+  .avatars { display: flex; align-items: center; height: 32u; }
+  .av {
+    width: 32u; height: 32u; border-radius: 999u; flex: none;
+    display: grid; place-items: center;
+    font-size: 13u; font-weight: 500; line-height: 1; padding-top: 1u;
+    box-shadow: 0 0 0 2u #fff;
+    position: relative;
+  }
+  .av + .av { margin-left: -6u; }
+  .count { font-size: 13u; color: #7a7a7a; display: flex; align-items: center; letter-spacing: -0.003em; }
+  .digit { display: inline-block; position: relative; min-width: 0.62em; text-align: right; }
+  .controls { display: flex; gap: 8u; margin-top: 17.5u; }
+  .field {
+    position: relative;
+    flex: 1; height: 44u; min-width: 0;
+    border: 1u solid #E1E1E1; border-radius: 14u;
+    padding: 0 6u;
+    display: flex; align-items: center; gap: 4u;
+    background: #fff;
+    cursor: text;
+    overflow: hidden; -webkit-tap-highlight-color:transparent;
+  }
+  .field input {
+    flex: 1; min-width: 30u; height: 30u; border: 0; outline: 0; background: transparent;
+    font: inherit; font-size: 13.5u; color: #171717; padding: 0 0 0 4u; letter-spacing: -0.003em;
+    caret-color: #171717;
+  }
+  .field input::placeholder { color: transparent; }
+  .ph { position: absolute; left: 16u; top: 0; bottom: 0; display: flex; align-items: center; font-size: 13.25u; color: #A4A4A4; pointer-events: none; letter-spacing: -0.003em; white-space: nowrap; }
+  .chip {
+    position: relative; flex: none;
+    height: 30u; border-radius: 999u;
+    padding: 0 9u 0 4u;
+    display: flex; align-items: center; gap: 7u;
+    font-size: 13u; letter-spacing: -0.003em; white-space: nowrap;
+    user-select: none;
+  }
+  .chip .shaker { position: relative; height: 100%; display: flex; align-items: center; gap: 7u; padding: 0 7.5u 0 4u; border-radius: 999u; }
+  .chip-bg { position: absolute; inset: 0; border-radius: inherit; }
+  .chip .disc {
+    position: relative; width: 22u; height: 22u; border-radius: 999u; flex: none;
+    display: grid; place-items: center; font-size: 11.5u; font-weight: 500; line-height: 1;
+  }
+  .chip .txt { position: relative; display: block; }
+  .chip.invalid { cursor: pointer; }
+  .chip .fade {
+    position: absolute; top: 0; bottom: 0; right: 0; width: 46u; border-radius: 0 999u 999u 0; pointer-events: none;
+  }
+  .chip .x {
+    position: absolute; right: 5u; top: 5u; width: 20u; height: 20u; border-radius: 999u;
+    background: #DDDCDC; border: 0; padding: 0; display: grid; place-items: center; cursor: pointer; color: #1c1c1c;
+  }
+  .chip .x svg { width: 9u; height: 9u; }
+  .undo {
+    position: absolute; right: 13u; top: 0; bottom: 0; display: flex; align-items: center;
+    font-size: 13u; color: #8E8E8E; background: none; border: 0; padding: 0 0 0 6u; cursor: pointer; font-family: inherit;
+    letter-spacing: -0.003em;
+  }
+  .undo:hover { color: #555; }
+  .btn {
+    flex: none; width: 96u; height: 44u; border-radius: 14u; border: 0;
+    font: inherit; font-size: 13.5u; font-weight: 500; letter-spacing: -0.003em;
+    display: flex; align-items: center; justify-content: center; gap: 0;
+    cursor: pointer; overflow: hidden;
+  }
+  .btn[aria-disabled="true"] { cursor: default; }
+  .btn .lbl { display: inline-flex; align-items: center; white-space: nowrap; }
+  .btn .check { display: inline-grid; place-items: center; overflow: visible; margin-left: 6u; }
+  .btn .check svg { width: 11u; height: 11u; }
+  .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+  .fly { position: absolute; border-radius: 999u; overflow: hidden; white-space: nowrap; }
+  .fly .disc { position: absolute; border-radius: 999u; display: grid; place-items: center; font-weight: 500; line-height: 1; }
+  .fly .txt { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; font-size: 13u; color: #171717; letter-spacing: -0.003em; }
+  .ghost { position: absolute; border-radius: 999u; }
+  .ghost .disc { position: absolute; left: 4u; top: 4u; width: 22u; height: 22u; border-radius: 999u; display: grid; place-items: center; font-size: 11.5u; font-weight: 500; }
+  body.capture .card { margin-left: -0.5u; }
+</style>
+<script>
+  // convert "12u" tokens to calc(var(--u) * 12px)
+  (function(){
+    var s = document.getElementById('base-css');
+    s.textContent = s.textContent.replace(/(-?\d*\.?\d+)u\b/g, 'calc(var(--u) * $1px)');
+    function setU(){
+      var q = new URLSearchParams(location.search);
+      var forced = parseFloat(q.get('u'));
+      var u = forced || Math.max(0.1, Math.min(1, (window.innerWidth - 40) / 420, (window.innerHeight - 64) / 220));
+      document.documentElement.style.setProperty('--u', u);
+      window.__u = u;
+    }
+    setU(); window.addEventListener('resize', function(){ setU(); window.dispatchEvent(new Event('u-change')); });
+    if (new URLSearchParams(location.search).has('capture')) document.addEventListener('DOMContentLoaded', function(){ document.body.classList.add('capture'); });
+  })();
+</script>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+import React, { useState, useRef, useLayoutEffect, useEffect, useCallback } from "react";
+import { createRoot } from "react-dom/client";
+import { motion, AnimatePresence, animate } from "motion/react";
+import htm from "htm";
+const html = htm.bind(React.createElement);
+
+/* ---------------- tokens (sampled from the video frames) ---------------- */
+const TINT = {
+  purple: { bg: "#EBE2FC", fg: "#6A55A0" },
+  blue:   { bg: "#E5EDFD", fg: "#4D70B4" },
+  pink:   { bg: "#FAE7E9", fg: "#B23F52" },
+  green:  { bg: "#E5F7EA", fg: "#3F9657" },
+  orange: { bg: "#FBEFE0", fg: "#BA7134" },
+  teal:   { bg: "#E0F4F4", fg: "#2F8C8C" },
+  yellow: { bg: "#FBF3D9", fg: "#9C7A16" },
+  // invalid chip
+  red:    { bg: "#F8D0D6", fg: "#A12A44", pill: "#FAE7E9", text: "#A3334A" },
+};
+const ROTATION = ["green", "orange", "teal", "yellow", "purple", "blue"];
+const CHIP_BG = "#F1F1F1";
+const INK = "#171717";
+const BASE = [
+  { id: "m", letter: "M", tint: "purple" },
+  { id: "y", letter: "Y", tint: "blue" },
+  { id: "s", letter: "S", tint: "pink" },
+];
+
+/* ---------------- motion parameters (derived frame-by-frame @60fps) ---------------- */
+const SPRING_TEXT  = { type: "spring", stiffness: 460, damping: 43, mass: 1 };   // text → chip slide, critically damped ω≈21.5
+const SPRING_POP   = { type: "spring", stiffness: 420, damping: 30, mass: 1 };   // letter-avatar pop inside chip
+const SPRING_FLY   = { type: "spring", stiffness: 340, damping: 34, mass: 1, restDelta: 0.5, restSpeed: 10 };   // chip → avatar flight (ω≈18.4, ζ≈0.92)
+const SPRING_BACK  = { type: "spring", stiffness: 400, damping: 38, mass: 1, restDelta: 0.5, restSpeed: 10 };   // avatar → chip (Undo)
+const SPRING_LAYOUT= { type: "spring", stiffness: 500, damping: 42 };
+const SHAKE = { x: [0, -5, 5, -2, 2, 0], times: [0, 0.125, 0.375, 0.6, 0.8, 1], duration: 0.38, delay: 0.22, ease: "easeInOut" };
+const STAGGER = 0.085;
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const u = () => window.__u || 1;
+let uid = 0;
+
+function relRect(el, root) {
+  const a = el.getBoundingClientRect(), b = root.getBoundingClientRect();
+  return { x: a.left - b.left, y: a.top - b.top, w: a.width, h: a.height };
+}
+
+const XIcon = () => html`<svg viewBox="0 0 10 10" fill="none"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`;
+const CheckIcon = () => html`<svg viewBox="0 0 12 12" fill="none"><path d="M2 6.4l2.6 2.6L10 3.3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+/* ---------------- Chip ---------------- */
+function Chip({ chip, register, onReopen, onRemove }) {
+  const [hover, setHover] = useState(false);
+  const shaker = useRef(null);
+  const t = TINT[chip.tint];
+  const invalid = !chip.valid;
+  const fresh = useRef(chip.fresh).current;          // only animate the morph on first mount
+  const pillColor = invalid ? t.pill : CHIP_BG;
+  // text starts exactly where it was typed: chip text offset (4 + 22 + 7) minus input padding (5)
+  const fromX = -(4 + 22 + 7 - 5) * u();
+  useEffect(() => {
+    if (fresh && invalid && shaker.current) {
+      const U = u();
+      animate(shaker.current, { x: SHAKE.x.map((v) => v * U) }, { duration: SHAKE.duration, times: SHAKE.times, delay: SHAKE.delay, ease: SHAKE.ease });
+    }
+  }, []);
+  return html`
+    <${motion.div}
+      layout="position"
+      ref=${(el) => register(chip.id, el)}
+      className=${"chip" + (invalid ? " invalid" : "")}
+      style=${{ opacity: chip.hidden ? 0 : 1, padding: 0 }}
+      transition=${{ layout: SPRING_LAYOUT }}
+      exit="exit"
+      variants=${{ exit: (mode) => mode === "silent" ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, scale: 0.85, filter: "blur(2px)", transition: { duration: 0.16 } } }}
+      onHoverStart=${() => setHover(true)}
+      onHoverEnd=${() => setHover(false)}
+      onMouseDown=${(e) => e.preventDefault()}
+      onClick=${() => { if (invalid && !chip.hidden) onReopen(chip); }}
+    >
+      <div ref=${shaker} className="shaker">
+        <${motion.span} className="chip-bg" style=${{ background: pillColor }}
+          initial=${fresh ? { opacity: 0, scaleX: 0.94 } : false}
+          animate=${{ opacity: 1, scaleX: 1 }}
+          transition=${{ duration: 0.12, ease: "easeOut" }} />
+        <${motion.span} className="disc" style=${{ background: t.bg, color: t.fg }}
+          initial=${fresh ? { scale: 0, opacity: 0 } : false}
+          animate=${{ scale: 1, opacity: 1 }}
+          transition=${{ ...SPRING_POP, delay: 0.08, opacity: { duration: 0.1, delay: 0.08 } }}>${chip.letter}<//>
+        <${motion.span} className="txt"
+          initial=${fresh ? { x: fromX, color: INK } : false}
+          animate=${{ x: 0, color: invalid ? t.text : INK }}
+          transition=${{ x: SPRING_TEXT, color: { duration: 0.2, ease: "easeOut" } }}>${chip.email}<//>
+        <${AnimatePresence}>
+          ${hover && !chip.hidden && html`
+            <${motion.span} key="fade" className="fade"
+              style=${{ background: `linear-gradient(90deg, ${pillColor}00 0%, ${pillColor} 55%)` }}
+              initial=${{ opacity: 0 }} animate=${{ opacity: 1 }} exit=${{ opacity: 0 }} transition=${{ duration: 0.12 }} />`}
+          ${hover && !chip.hidden && html`
+            <${motion.button} key="x" className="x" aria-label=${"Remove " + chip.email}
+              initial=${{ opacity: 0, scale: 0.6 }} animate=${{ opacity: 1, scale: 1 }} exit=${{ opacity: 0, scale: 0.6 }}
+              transition=${{ type: "spring", stiffness: 600, damping: 32, opacity: { duration: 0.1 } }}
+              onClick=${(e) => { e.stopPropagation(); onRemove(chip); }}><${XIcon} /><//>`}
+        <//>
+      </div>
+    <//>`;
+}
+
+/* ---------------- Flying chip ⇄ avatar ---------------- */
+function Flyer({ f, onDone }) {
+  const t = TINT[f.tint];
+  const U = u();
+  const up = f.dir === "up";
+  const A = f.from, B = f.to;
+  const big = up ? B.h : A.h;            // avatar diameter
+  const discFrom = up ? { left: 4 * U, top: 4 * U, width: 22 * U, height: 22 * U, fontSize: 11.5 * U }
+                      : { left: 0, top: 0, width: big, height: big, fontSize: 12.5 * U };
+  const discTo   = up ? { left: 0, top: 0, width: big, height: big, fontSize: 12.5 * U }
+                      : { left: 4 * U, top: 4 * U, width: 22 * U, height: 22 * U, fontSize: 11.5 * U };
+  const fly = { ...(up ? SPRING_FLY : SPRING_BACK), delay: f.delay };
+  return html`
+    <${motion.div} className="fly"
+      initial=${{ left: A.x, top: A.y, width: A.w, height: A.h, backgroundColor: up ? CHIP_BG : t.bg, boxShadow: up ? "0 0 0 0px #fff" : `0 0 0 ${2 * U}px #fff` }}
+      animate=${{ left: B.x, top: B.y, width: B.w, height: B.h, backgroundColor: up ? t.bg : CHIP_BG, boxShadow: up ? `0 0 0 ${2 * U}px #fff` : "0 0 0 0px #fff" }}
+      transition=${{ default: fly,
+        backgroundColor: up ? { duration: 0.1, delay: f.delay } : { duration: 0.1, delay: f.delay + 0.02 },
+        boxShadow: { duration: 0.2, delay: f.delay + (up ? 0.1 : 0) } }}
+      onAnimationComplete=${() => onDone(f)}
+    >
+      <${motion.span} className="disc" style=${{ background: t.bg, color: t.fg }}
+        initial=${discFrom} animate=${discTo} transition=${fly}>${f.letter}<//>
+      <${motion.span} className="txt" style=${{ left: 33 * U }}
+        initial=${up ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+        animate=${up ? { opacity: 0, filter: "blur(4px)" } : { opacity: 1, filter: "blur(0px)" }}
+        transition=${up ? { duration: 0.14, delay: f.delay, ease: "easeOut" } : { duration: 0.12, delay: f.delay + 0.03, ease: "easeOut" }}
+      >${f.email}<//>
+    <//>`;
+}
+
+/* ghost of an invalid chip dissolving while its text slides back into the input */
+function Ghost({ g, onDone }) {
+  const t = TINT.red;
+  return html`
+    <${motion.div} className="ghost" style=${{ left: g.x, top: g.y, width: g.w, height: g.h, background: t.pill }}
+      initial=${{ opacity: 1 }} animate=${{ opacity: 0 }} transition=${{ duration: 0.18, ease: "easeOut" }}
+      onAnimationComplete=${() => onDone(g)}>
+      <${motion.span} className="disc" style=${{ background: t.bg, color: t.fg }}
+        initial=${{ scale: 1 }} animate=${{ scale: 0.3 }} transition=${{ duration: 0.16, ease: "easeIn" }}>${g.letter}<//>
+    <//>`;
+}
+
+/* ---------------- rolling digit ---------------- */
+function Count({ n }) {
+  const U = u();
+  return html`
+    <span className="count">
+      <span className="digit">
+        <${AnimatePresence} mode="popLayout" initial=${false}>
+          <${motion.span} key=${n} style=${{ display: "inline-block" }}
+            initial=${{ y: 7 * U, opacity: 0, filter: "blur(2.5px)" }}
+            animate=${{ y: 0, opacity: 1, filter: "blur(0px)" }}
+            exit=${{ y: -7 * U, opacity: 0, filter: "blur(2.5px)" }}
+            transition=${{ duration: 0.13, ease: "easeOut" }}>${n}<//>
+        <//>
+      </span>
+      <span>\u00a0members</span>
+    </span>`;
+}
+
+/* ---------------- App ---------------- */
+function App() {
+  const [, force] = useState(0);
+  useEffect(() => { const f = () => force((x) => x + 1); window.addEventListener("u-change", f); return () => window.removeEventListener("u-change", f); }, []);
+
+  const [members, setMembers] = useState([]);        // invited people shown as avatars
+  const [chips, setChips] = useState([]);
+  const [text, setText] = useState("");
+  const [invited, setInvited] = useState(null);      // { ids } of the last batch while Undo is offered
+  const [flights, setFlights] = useState([]);
+  const [ghosts, setGhosts] = useState([]);
+  const [pending, setPending] = useState(null);
+  const [exitMode, setExitMode] = useState("normal");
+  const [btnDelay, setBtnDelay] = useState(0);
+  const rotation = useRef(0);
+
+  const cardRef = useRef(null), inputRef = useRef(null), fieldRef = useRef(null);
+  const chipEls = useRef({}), avEls = useRef({});
+  const registerChip = useCallback((id, el) => { if (el) chipEls.current[id] = el; else delete chipEls.current[id]; }, []);
+  const registerAv = useCallback((id, el) => { if (el) avEls.current[id] = el; else delete avEls.current[id]; }, []);
+
+  const hasInvalid = chips.some((c) => !c.valid);
+  const canInvite = !invited && chips.length > 0 && !hasInvalid && !pending;
+  const count = BASE.length + members.length;
+
+  const finalizeInvite = () => { if (invited) setInvited(null); };
+
+  const commit = (raw) => {
+    const email = raw.trim().replace(/,$/, "");
+    if (!email) return false;
+    const valid = EMAIL_RE.test(email);
+    const tint = valid ? ROTATION[rotation.current++ % ROTATION.length] : "red";
+    setExitMode("normal");
+    setBtnDelay(0);
+    setChips((cs) => [...cs.map((c) => ({ ...c, fresh: false })), { id: "c" + ++uid, email, valid, tint, letter: email[0].toUpperCase(), fresh: true }]);
+    setText("");
+    return true;
+  };
+
+  const onChange = (e) => {
+    finalizeInvite();
+    const v = e.target.value;
+    if (/[,\s]/.test(v)) {
+      const parts = v.split(/[,\s]+/);
+      const rest = parts.pop();
+      parts.forEach((p) => p && commit(p));
+      setText(rest);
+      return;
+    }
+    setText(v);
+  };
+
+  const onKeyDown = (e) => {
+    if ((e.key === "Enter" || e.key === "Tab") && text.trim()) { e.preventDefault(); commit(text); return; }
+    if (e.key === "Enter" && !text.trim() && canInvite) { e.preventDefault(); invite(); return; }
+    if (e.key === "Backspace" && text === "" && chips.length) {
+      e.preventDefault(); setExitMode("normal"); setChips((cs) => cs.slice(0, -1));
+    }
+  };
+
+  const remove = (chip) => { setExitMode("normal"); setChips((cs) => cs.filter((c) => c.id !== chip.id)); inputRef.current?.focus(); };
+
+  /* invalid chip → back into editable text */
+  const reopen = (chip) => {
+    const card = cardRef.current, el = chipEls.current[chip.id];
+    if (!el) return;
+    const r = relRect(el, card);
+    const txt = el.querySelector(".txt").getBoundingClientRect();
+    setGhosts((g) => [...g, { id: chip.id, letter: chip.letter, ...r }]);
+    setExitMode("silent");
+    const pendingText = text.trim();
+    inputRef.current?.blur();                        // caret comes back once the text has landed
+    setChips((cs) => cs.filter((c) => c.id !== chip.id).map((c) => ({ ...c, fresh: false })));
+    if (pendingText) commit(pendingText);
+    setText(chip.email);
+    setBtnDelay(0.18);
+    setPending({ type: "reopen", txtLeft: txt.left, id: chip.id });
+  };
+
+  const invite = () => {
+    if (!canInvite) return;
+    const card = cardRef.current;
+    const batch = chips.map((c) => ({ ...c, from: relRect(chipEls.current[c.id], card) }));
+    setExitMode("silent");
+    setChips([]);
+    setText("");
+    setMembers((m) => [...m, ...batch.map(({ from, ...c }) => ({ ...c, hidden: true, fresh: false }))]);
+    setInvited({ ids: batch.map((c) => c.id) });
+    setPending({ type: "up", batch });
+  };
+
+  const undo = () => {
+    if (!invited) return;
+    const card = cardRef.current;
+    const batch = members.filter((m) => invited.ids.includes(m.id)).map((m) => ({ ...m, from: relRect(avEls.current[m.id], card) }));
+    setMembers((m) => m.filter((x) => !invited.ids.includes(x.id)));
+    setExitMode("silent");
+    setChips((cs) => [...cs, ...batch.map(({ from, ...c }) => ({ ...c, hidden: true, fresh: false }))]);
+    setInvited(null);
+    setPending({ type: "down", batch });
+  };
+
+  useLayoutEffect(() => {
+    if (!pending) return;
+    const card = cardRef.current;
+    if (pending.type === "reopen") {
+      const input = inputRef.current;
+      const gone = chipEls.current[pending.id];
+      if (gone) gone.style.display = "none";         // the reopened chip is leaving; take it out of flow now
+      const ir = input.getBoundingClientRect();
+      const textLeft = ir.left + parseFloat(getComputedStyle(input).paddingLeft);
+      const dx = pending.txtLeft - textLeft;
+      input.style.color = TINT.red.text;
+      input.style.transform = `translateX(${dx}px)`;
+      animate(input, { x: [dx, 0] }, SPRING_TEXT);
+      animate(input, { color: [TINT.red.text, INK] }, { duration: 0.1, ease: "easeOut" });
+      setTimeout(() => { input.focus(); const n = input.value.length; input.setSelectionRange(n, n); }, 190);
+      setPending(null);
+      return;
+    }
+    const els = pending.type === "up" ? avEls.current : chipEls.current;
+    setFlights((fs) => [...fs, ...pending.batch.map((c, i) => ({
+      key: c.id + ":" + pending.type + ":" + Date.now(), id: c.id, dir: pending.type, letter: c.letter, email: c.email, tint: c.tint,
+      from: c.from, to: relRect(els[c.id], card), delay: pending.type === "up" ? i * STAGGER : i * 0.02,
+    }))]);
+    setPending(null);
+  }, [pending]);
+
+  const flightDone = (f) => {
+    setFlights((fs) => fs.filter((x) => x.key !== f.key));
+    if (f.dir === "up") setMembers((m) => m.map((x) => (x.id === f.id ? { ...x, hidden: false } : x)));
+    else setChips((cs) => cs.map((x) => (x.id === f.id ? { ...x, hidden: false } : x)));
+  };
+
+  const btnState = invited ? "invited" : canInvite ? "on" : "off";
+  const U = u();
+
+  return html`
+    <div className="card" ref=${cardRef}>
+      <h1 className="title">Share \u201cQ4 roadmap\u201d</h1>
+      <p className="sub">People you invite can edit this file</p>
+
+      <div className="row">
+        <div className="avatars">
+          ${BASE.map((p, i) => html`<div key=${p.id} className="av" style=${{ background: TINT[p.tint].bg, color: TINT[p.tint].fg, zIndex: i + 1 }}>${p.letter}</div>`)}
+          ${members.map((p, i) => html`<div key=${p.id} ref=${(el) => registerAv(p.id, el)} className="av"
+              style=${{ background: TINT[p.tint].bg, color: TINT[p.tint].fg, opacity: p.hidden ? 0 : 1, zIndex: BASE.length + i + 1 }}>${p.letter}</div>`)}
+        </div>
+        <${Count} n=${count} />
+      </div>
+
+      <div className="controls">
+        <div className="field" ref=${fieldRef} onMouseDown=${(e) => { if (e.target === fieldRef.current) { e.preventDefault(); inputRef.current.focus(); } }}>
+          <${AnimatePresence} initial=${false} mode="popLayout" custom=${exitMode}>
+            ${chips.map((c) => html`<${Chip} key=${c.id} chip=${c} register=${registerChip} onReopen=${reopen} onRemove=${remove} />`)}
+          <//>
+          <input ref=${inputRef}
+            value=${text} onChange=${onChange} onKeyDown=${onKeyDown}
+            placeholder=${chips.length || invited ? "" : "Add people by email"}
+            spellCheck=${false} autoComplete="off" aria-label="Add people by email" />
+          <${AnimatePresence} initial=${false}>
+            ${!text && !chips.length && !invited && html`<${motion.span} key="ph" className="ph"
+                initial=${{ opacity: 0 }} animate=${{ opacity: 1 }} exit=${{ opacity: 0, transition: { duration: 0.05 } }} transition=${{ duration: 0.15 }}>Add people by email<//>`}
+          <//>
+          <${AnimatePresence}>
+            ${invited && html`
+              <${motion.button} key="undo" className="undo" onClick=${undo}
+                initial=${{ opacity: 0, filter: "blur(4px)" }} animate=${{ opacity: 1, filter: "blur(0px)" }}
+                exit=${{ opacity: 0, filter: "blur(4px)", transition: { duration: 0.12 } }}
+                transition=${{ duration: 0.2, delay: 0.12, ease: "easeOut" }}>Undo<//>`}
+          <//>
+        </div>
+
+        <${motion.button} className="btn" aria-disabled=${btnState === "off"}
+          onClick=${() => { if (btnState === "on") invite(); }}
+          initial=${false}
+          animate=${{ backgroundColor: btnState === "off" ? "#E5E5E5" : "#1F1F1F", color: btnState === "off" ? "#929292" : "#FFFFFF" }}
+          whileHover=${{ backgroundColor: btnState === "on" ? "#333333" : btnState === "off" ? "#E5E5E5" : "#1F1F1F" }}
+          whileTap=${{ scale: btnState === "on" ? 0.98 : 1 }}
+          transition=${{ duration: 0.15, delay: btnDelay, ease: "easeOut", scale: { type: "spring", stiffness: 600, damping: 30 } }}>
+          <span className="lbl">
+            <${motion.span} layout="position" transition=${{ layout: { type: "spring", stiffness: 380, damping: 36 } }}>Invite<//>
+            <${AnimatePresence} initial=${false} mode="popLayout">
+              ${invited && html`<${motion.span} key="d" initial=${{ opacity: 0, filter: "blur(3px)" }} animate=${{ opacity: 1, filter: "blur(0px)" }}
+                  exit=${{ opacity: 0, filter: "blur(3px)", transition: { duration: 0.1 } }}
+                  transition=${{ duration: 0.16, delay: 0.1, ease: "easeOut" }}>d<//>`}
+              ${invited && html`<${motion.span} key="ck" className="check" initial=${{ opacity: 0 }} animate=${{ opacity: 1 }}
+                  exit=${{ opacity: 0, transition: { duration: 0.1 } }} transition=${{ duration: 0.14 }}><${CheckIcon} /><//>`}
+            <//>
+          </span>
+        <//>
+      </div>
+
+      <div className="overlay">
+        ${ghosts.map((g) => html`<${Ghost} key=${"g" + g.id} g=${g} onDone=${(x) => setGhosts((gs) => gs.filter((y) => y !== x))} />`)}
+        ${flights.map((f) => html`<${Flyer} key=${f.key} f=${f} onDone=${flightDone} />`)}
+      </div>
+    </div>
+    `;
+}
+
+createRoot(document.getElementById("root")).render(html`<${App} />`);
+</script>
+</body>
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Apollo robot</title>
+<style>
+:root{
+  --bgTop:#3a50aa;--bgMid:#252a74;--bgBot:#1f0c3a;--ring:#86c0ff;--ringA:1;
+  --hl:#e6e6f3;--hm:#b6b9d7;--hd:#7c84b6;--rimc:#86c2f6;--refl:#8fb8ee;
+  --led:#fff2d6;--glow:#ff9a2e;--edge:#f2c27a;--visTop:#343744;--visBot:#090d1b;--shadow:rgba(31,12,58,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  background:#fff;color:#1d1d1f;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(16px,3.2vmin,30px);user-select:none;-webkit-user-select:none;touch-action:none}
+header{text-align:center}
+header h1{font-size:clamp(20px,3.4vmin,28px);font-weight:700;letter-spacing:.04em}
+header p{margin-top:6px;font-size:clamp(12px,1.8vmin,14px);color:#86868b}
+.stage{position:relative;width:min(64vmin,440px);aspect-ratio:1;filter:drop-shadow(0 22px 34px var(--shadow)) drop-shadow(0 4px 10px rgba(0,0,0,.08))}
+.icon{position:absolute;inset:0;border-radius:22.1%;overflow:hidden;
+  background:linear-gradient(180deg,var(--bgTop) 0%,var(--bgMid) 53%,var(--bgBot) 100%)}
+.icon svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
+.zzz text{font:800 22px/1 -apple-system,"PingFang SC",sans-serif;fill:#fff}
+.controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:92vw}
+.controls button{appearance:none;border:0;cursor:pointer;font:inherit;font-size:14px;padding:9px 16px;border-radius:999px;background:#fff;color:#3a3b4a;
+  box-shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(30,30,60,.07);transition:all .2s ease}
+.controls button:hover{transform:translateY(-1px)}
+.controls button.on{background:#1d1d1f;color:#fff}
+.controls button .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.status{font-size:13px;color:#86868b;min-height:1.2em}
+.status b{color:#1d1d1f;font-weight:600}
+body.bare header,body.bare .controls,body.bare .status{display:none}
+body.bare{background:#fff}
+body.bare .stage{filter:none}
+body{gap:0;background:#fff;touch-action:pan-y} .stage{width:min(68vmin,440px);filter:none}
+</style>
+</head>
+<body>
+
+
+<div class="stage" id="stage">
+  <div class="icon">
+    <svg viewBox="0 0 434 434" id="svg">
+      <defs>
+        <radialGradient id="bgGlow" cx="205" cy="20" r="250" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--glowBg)"/>
+          <stop offset="1" style="stop-color:var(--glowBg);stop-opacity:0"/>
+        </radialGradient>
+        <radialGradient id="disc1" cx="200" cy="66" r="64" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--ring);stop-opacity:.7"/>
+          <stop offset=".6" style="stop-color:var(--ring);stop-opacity:.38"/>
+          <stop offset="1" style="stop-color:var(--ring);stop-opacity:.26"/>
+        </radialGradient>
+        <radialGradient id="boltFade" cx="200" cy="70" r="200" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#fff" stop-opacity=".85"/>
+          <stop offset=".45" stop-color="#fff" stop-opacity=".55"/>
+          <stop offset="1" stop-color="#fff" stop-opacity=".22"/>
+        </radialGradient>
+        <filter id="soft1" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.4"/></filter>
+        <filter id="soft2" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter>
+        <filter id="soft4" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4"/></filter>
+        <filter id="soft8" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8"/></filter>
+        <filter id="ledGlow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.5"/></filter>
+        <filter id="ledGlow2" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="10"/></filter>
+
+        <!-- shell (back part, visible as top edge + chin) -->
+        <linearGradient id="shellG" x1="0" y1="-131.5" x2="0" y2="128.5" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--shTop)"/>
+          <stop offset=".05" style="stop-color:var(--rTop)"/>
+          <stop offset=".45" style="stop-color:var(--rSide)"/>
+          <stop offset=".88" style="stop-color:var(--chin)"/>
+          <stop offset=".94" style="stop-color:var(--chin)"/>
+          <stop offset="1" style="stop-color:var(--chinLo)"/>
+        </linearGradient>
+        <linearGradient id="topHi" x1="0" y1="-128" x2="0" y2="-100" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--shTop);stop-opacity:1"/>
+          <stop offset="1" style="stop-color:var(--shTop);stop-opacity:0"/>
+        </linearGradient>
+        <linearGradient id="rimB" x1="0" y1="70" x2="0" y2="128" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--rimBot);stop-opacity:0"/>
+          <stop offset="1" style="stop-color:var(--rimBot);stop-opacity:1"/>
+        </linearGradient>
+        <!-- front ring around visor -->
+        <linearGradient id="ringG" x1="0" y1="-122" x2="0" y2="98" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--rTop)"/>
+          <stop offset=".3" style="stop-color:var(--rTL)"/>
+          <stop offset=".55" style="stop-color:var(--rSide)"/>
+          <stop offset=".82" style="stop-color:var(--rBot)"/>
+          <stop offset="1" style="stop-color:var(--rBot)"/>
+        </linearGradient>
+        <radialGradient id="ringHiTR" cx="98" cy="-86" r="62" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--rTR);stop-opacity:.95"/>
+          <stop offset="1" style="stop-color:var(--rTR);stop-opacity:0"/>
+        </radialGradient>
+        <radialGradient id="ringHiL" cx="-128" cy="-10" r="60" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--earBody);stop-opacity:.2"/>
+          <stop offset="1" style="stop-color:var(--earBody);stop-opacity:0"/>
+        </radialGradient>
+        <linearGradient id="lipG" x1="0" y1="-118" x2="0" y2="79.5" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--rHi)"/>
+          <stop offset=".035" style="stop-color:var(--lipTop)"/>
+          <stop offset=".5" style="stop-color:var(--rSide)"/>
+          <stop offset=".85" style="stop-color:var(--rSide)"/>
+          <stop offset=".96" style="stop-color:var(--lipBot)"/>
+          <stop offset="1" style="stop-color:var(--lipBot)"/>
+        </linearGradient>
+        <linearGradient id="grooveG" x1="0" y1="-122" x2="0" y2="98" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/>
+        </linearGradient>
+        <!-- ears -->
+        <linearGradient id="earG" x1="0" y1="-54" x2="0" y2="48" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--earCap)"/>
+          <stop offset=".25" style="stop-color:var(--earBody)"/>
+          <stop offset=".8" style="stop-color:var(--earBody)"/>
+          <stop offset="1" style="stop-color:var(--rSide)"/>
+        </linearGradient>
+        <linearGradient id="capG" x1="-174" y1="0" x2="-158" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--rSide)"/>
+          <stop offset=".35" style="stop-color:var(--earCap)"/>
+          <stop offset="1" style="stop-color:var(--earCap)"/>
+        </linearGradient>
+        <linearGradient id="capV" x1="0" y1="-54" x2="0" y2="48" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#fff" stop-opacity=".0"/><stop offset=".85" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/>
+        </linearGradient>
+        <linearGradient id="earCapG2" x1="0" y1="-54" x2="0" y2="48" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--rTop)"/>
+          <stop offset=".22" style="stop-color:var(--earCap)"/>
+          <stop offset=".5" style="stop-color:var(--earCap)"/>
+          <stop offset=".8" style="stop-color:var(--rSide)"/>
+          <stop offset="1" style="stop-color:var(--rBot)"/>
+        </linearGradient>
+        <linearGradient id="earBodyG" x1="0" y1="-49" x2="0" y2="43" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--earCap)"/>
+          <stop offset=".45" style="stop-color:var(--earBody)"/>
+          <stop offset=".85" style="stop-color:var(--earBody)"/>
+          <stop offset="1" style="stop-color:var(--rSide)"/>
+        </linearGradient>
+        <!-- antenna -->
+        <radialGradient id="ballG" cx="-9" cy="-184" r="34" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#ffffff" stop-opacity=".9"/>
+          <stop offset=".25" style="stop-color:var(--ball)"/>
+          <stop offset=".7" style="stop-color:var(--ball)"/>
+          <stop offset="1" style="stop-color:var(--ballLo)"/>
+        </radialGradient>
+        <linearGradient id="stemG" x1="-6" y1="0" x2="6" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--chinLo)"/><stop offset=".45" style="stop-color:var(--stem)"/><stop offset="1" style="stop-color:var(--chinLo)"/>
+        </linearGradient>
+        <linearGradient id="baseG" x1="0" y1="-140" x2="0" y2="-124" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--base)"/><stop offset=".6" style="stop-color:var(--base)"/><stop offset="1" style="stop-color:var(--ballLo)"/>
+        </linearGradient>
+        <clipPath id="shellClip"><ellipse cx="0" cy="-1.5" rx="145.5" ry="130"/></clipPath>
+
+        <!-- visor -->
+        <linearGradient id="visorG" x1="0" y1="-91" x2="0" y2="91" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:var(--visTop)"/>
+          <stop offset=".3" style="stop-color:var(--visBot)"/>
+          <stop offset="1" style="stop-color:var(--visBot)"/>
+        </linearGradient>
+        <pattern id="vScan" width="10" height="5.6" patternUnits="userSpaceOnUse" y="-.5">
+          <rect width="10" height="2.4" fill="#000" opacity=".6"/>
+          <rect y="2.4" width="10" height="1" fill="#fff" opacity=".045"/>
+        </pattern>
+        <pattern id="ledScan" width="10" height="5.4" patternUnits="userSpaceOnUse" y="-.5">
+          <rect y="2.0" width="10" height="3.4" fill="#fff"/>
+        </pattern>
+        <mask id="ledMask" maskUnits="userSpaceOnUse" x="-200" y="-200" width="400" height="400">
+          <rect x="-200" y="-200" width="400" height="400" fill="url(#ledScan)"/>
+        </mask>
+        <linearGradient id="edgeH" x1="-121" y1="0" x2="121" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#fff"/><stop offset=".14" stop-color="#ccc"/><stop offset=".3" stop-color="#222"/><stop offset=".4" stop-color="#000"/><stop offset=".6" stop-color="#000"/><stop offset=".7" stop-color="#222"/><stop offset=".86" stop-color="#ccc"/><stop offset="1" stop-color="#fff"/>
+        </linearGradient>
+        <mask id="edgeMask" maskUnits="userSpaceOnUse" x="-130" y="-110" width="260" height="220">
+          <rect x="-130" y="-110" width="260" height="220" fill="url(#edgeH)"/>
+        </mask>
+        <clipPath id="visorClip"><ellipse cx="0" cy="0" rx="107" ry="89.5"/></clipPath>
+        <g id="led"><path id="eL"/><path id="eR"/><path id="mo"/></g>
+      </defs>
+
+      <!-- background: top glow + antenna rings -->
+      <rect width="434" height="434" fill="url(#bgGlow)" style="opacity:var(--glowA)"/>
+      <g id="rings" style="opacity:var(--ringA)">
+        <circle cx="200" cy="66" r="192" style="fill:var(--ring)" opacity=".09" filter="url(#soft2)"/>
+        <circle cx="200" cy="66" r="128" style="fill:var(--ring)" opacity=".26"/>
+        <circle cx="200" cy="66" r="64" fill="url(#disc1)"/>
+        <circle id="pulse" cx="200" cy="66" r="64" fill="none" style="stroke:var(--ring)" stroke-width="2.5" opacity="0"/>
+      </g>
+
+      <!-- lightning (traced from the grey reference) -->
+      <g id="bolts" opacity="0">
+        <g id="boltWrap" fill="url(#boltFade)">
+          <path d="M29 127L65 120L72 154L79 154L167 95L85 126L77 92L74 92L32 122Z"/>
+          <path d="M374 98L316 74L316 104L235 91L335 126L333 97L372 104Z"/>
+          <path d="M75 47L77 52L90 53L89 64L86 65L83 74L156 72L99 64L105 42L80 44Z"/>
+          <path d="M345 29L286 37L298 51L296 54L238 73L319 58L306 43L337 34Z"/>
+          <path d="M282 -4L262 -4L229 47Z"/>
+          <path d="M179 -4L193 30L188 -4Z"/>
+          <path d="M56 -4L54 12L76 5L169 53L102 -4Z"/>
+          <path d="M335 -4L352 2L381 12L378 -4Z"/>
+        </g>
+      </g>
+
+      <!-- robot head: fixed pose (as in the reference); only a tiny 2D bob -->
+      <g id="bob">
+        <g transform="translate(218.5 241.5) rotate(-6.5)">
+          <!-- antenna -->
+          <rect x="-5" y="-156" width="10" height="26" rx="3.5" fill="url(#stemG)"/>
+          <ellipse cx="1.5" cy="-130" rx="23" ry="9" fill="url(#baseG)"/>
+          <circle cx="0" cy="-172" r="22" fill="url(#ballG)"/>
+          <path d="M-21.6 -170Q0 -162 21.6 -170" fill="none" style="stroke:var(--stem)" stroke-width="1.4" opacity=".75"/>
+          <path d="M-21 -168.5Q0 -160.5 21 -168.5" fill="none" stroke="#fff" stroke-width=".8" opacity=".6"/>
+
+          <g transform="rotate(-3.5)">
+          <!-- shell -->
+          <ellipse cx="0" cy="-1.5" rx="145.5" ry="130" fill="url(#shellG)"/>
+          <g clip-path="url(#shellClip)">
+            <ellipse cx="0" cy="-3.5" rx="145.5" ry="130" fill="none" stroke="url(#topHi)" stroke-width="7"/>
+            <ellipse cx="0" cy="0" rx="150" ry="140" fill="url(#ringHiTR)"/>
+            <ellipse cx="0" cy="-1.5" rx="145.5" ry="130" fill="none" stroke="url(#rimB)" stroke-width="12" filter="url(#soft2)"/>
+          </g>
+          <!-- shadow of the ring on the chin -->
+          <ellipse cx="0" cy="-10" rx="136" ry="112" fill="url(#grooveG)" filter="url(#soft4)" clip-path="url(#shellClip)"/>
+
+          </g>
+          <!-- ears -->
+          <g id="earL">
+            <rect x="-162" y="-49" width="40" height="92" rx="4" fill="url(#earBodyG)"/>
+            <rect x="-174" y="-54" width="16" height="102" rx="4.5" fill="url(#earCapG2)"/>
+            <rect x="-174" y="-54" width="3" height="102" rx="1.5" fill="#000" opacity=".12"/>
+            <rect x="-160.5" y="-54" width="2.5" height="102" fill="#000" opacity=".07"/>
+            <path d="M-158 -4L-128 -6" style="stroke:var(--rBot)" stroke-width="1.1" opacity=".7"/>
+            <path d="M-158 -2.8L-128 -4.8" stroke="#fff" stroke-width=".9" opacity=".6"/>
+          </g>
+          <g transform="scale(-1 1)">
+            <rect x="-162" y="-49" width="40" height="92" rx="4" fill="url(#earBodyG)"/>
+            <rect x="-174" y="-54" width="16" height="102" rx="4.5" fill="url(#earCapG2)"/>
+            <rect x="-174" y="-54" width="16" height="102" rx="4.5" fill="#000" opacity=".05"/>
+            <rect x="-174" y="-54" width="3" height="102" rx="1.5" fill="#000" opacity=".14"/>
+            <path d="M-158 -4L-128 -6" style="stroke:var(--rBot)" stroke-width="1.1" opacity=".7"/>
+          </g>
+          <g transform="rotate(-3.5) translate(2 0)">
+          <!-- front ring -->
+          <ellipse cx="0" cy="-13" rx="136" ry="112" fill="url(#ringG)"/>
+          <ellipse cx="0" cy="-13" rx="136" ry="112" fill="url(#ringHiTR)"/>
+          <ellipse cx="0" cy="-13" rx="136" ry="112" fill="url(#ringHiL)"/>
+          <ellipse cx="0" cy="-13" rx="135" ry="111" fill="none" style="stroke:var(--rHi)" stroke-width="1.6" opacity=".75"/>
+          </g>
+          <!-- inner lip -->
+          <ellipse cx="0" cy="-19.25" rx="120.5" ry="98.75" fill="url(#lipG)"/>
+
+          <!-- visor glass + LED face -->
+          <g transform="translate(0 -19)">
+            <!-- golden glow band on the lip at the visor sides -->
+            <g mask="url(#edgeMask)">
+              <ellipse cx="0" cy="0" rx="112.5" ry="93.5" fill="none" style="stroke:var(--edge)" stroke-width="11" opacity=".55" filter="url(#soft2)"/>
+              <g mask="url(#ledMask)"><ellipse cx="0" cy="0" rx="112.5" ry="93.5" fill="none" style="stroke:var(--edge)" stroke-width="11"/></g>
+            </g>
+            <ellipse cx="0" cy="0" rx="107" ry="89.5" fill="url(#visorG)"/>
+            <g clip-path="url(#visorClip)">
+              <ellipse cx="-4" cy="-40" rx="98" ry="26" style="fill:var(--visHaze)" filter="url(#soft8)"/>
+              <rect x="-120" y="-100" width="240" height="200" fill="url(#vScan)"/>
+              <!-- warm glowing inner edge (strongest at the sides) -->
+              <g mask="url(#edgeMask)">
+                <g mask="url(#ledMask)">
+                  <ellipse cx="0" cy="0" rx="106" ry="88.5" fill="none" style="stroke:var(--edge)" stroke-width="5"/>
+                </g>
+                <ellipse cx="0" cy="0" rx="106" ry="88.5" fill="none" style="stroke:var(--edge)" stroke-width="4" opacity=".4" filter="url(#soft1)"/>
+                <ellipse cx="0" cy="0" rx="106" ry="84" fill="none" style="stroke:var(--edge)" stroke-width="12" opacity=".3" filter="url(#soft4)"/>
+              </g>
+              <!-- LED face -->
+              <g id="face">
+                <use href="#led" style="fill:var(--glow)" opacity=".85" filter="url(#ledGlow2)"/>
+                <use href="#led" style="fill:var(--glow)" opacity=".32" filter="url(#ledGlow)"/>
+                <g mask="url(#ledMask)"><use href="#led" style="fill:var(--led)"/></g>
+              </g>
+              <ellipse cx="0" cy="0" rx="107" ry="89.5" fill="none" stroke="#000" stroke-width="2.5" opacity=".4" filter="url(#soft1)"/>
+            </g>
+          </g>
+        </g>
+      </g>
+
+      <!-- zzz (sleepy) -->
+      <g class="zzz" id="zzz" opacity="0" transform="translate(318 96)">
+        <text id="z1" x="0" y="0">Z</text><text id="z2" x="20" y="-26" style="font-size:17px">z</text><text id="z3" x="34" y="-48" style="font-size:13px">z</text>
+      </g>
+    </svg>
+  </div>
+</div>
+
+
+
+<svg width="0" height="0" style="position:absolute"><clipPath id="squircle" clipPathUnits="objectBoundingBox"><path id="sqPath"/></clipPath></svg>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const L = (a, b, t) => a + (b - a) * t;
+addEventListener('contextmenu', event => event.preventDefault());
+addEventListener('dragstart', event => event.preventDefault());
+
+/* ---------- squircle (iOS-like superellipse) ---------- */
+(() => { const n = 5, N = 160; let d = '';
+  for (let i = 0; i <= N; i++) { const t = i / N * Math.PI * 2, c = Math.cos(t), s = Math.sin(t);
+    d += (i ? 'L' : 'M') + (.5 + .5 * Math.sign(c) * Math.pow(Math.abs(c), 2 / n)).toFixed(4) + ' ' + (.5 + .5 * Math.sign(s) * Math.pow(Math.abs(s), 2 / n)).toFixed(4); }
+  $('sqPath').setAttribute('d', d + 'Z'); })();
+
+/* ---------- shape sampling for smooth morphing ---------- */
+const NS = 'http://www.w3.org/2000/svg', N = 96;
+const probe = document.createElementNS(NS, 'path'); $('svg').appendChild(probe);
+function sample(d) {
+  probe.setAttribute('d', d);
+  const len = probe.getTotalLength(), pts = [];
+  for (let i = 0; i < N; i++) { const p = probe.getPointAtLength(len * i / N); pts.push([p.x, p.y]); }
+  // clockwise
+  let area = 0; for (let i = 0; i < N; i++) { const a = pts[i], b = pts[(i + 1) % N]; area += a[0] * b[1] - b[0] * a[1]; }
+  if (area < 0) pts.reverse();
+  // start at the point closest to "top" direction from centroid
+  let cx = 0, cy = 0; pts.forEach(p => { cx += p[0]; cy += p[1]; }); cx /= N; cy /= N;
+  let best = 0, bv = -1e9; pts.forEach((p, i) => { const v = -(p[1] - cy) / (Math.hypot(p[0] - cx, p[1] - cy) + 1e-6) - Math.abs(p[0] - cx) * .002; if (v > bv) { bv = v; best = i; } });
+  return pts.slice(best).concat(pts.slice(0, best));
+}
+const circle = r => `M0 ${-r}A${r} ${r} 0 1 1 0 ${r}A${r} ${r} 0 1 1 0 ${-r}Z`;
+const ell = (rx, ry) => `M0 ${-ry}A${rx} ${ry} 0 1 1 0 ${ry}A${rx} ${ry} 0 1 1 0 ${-ry}Z`;
+const pill = (w, h) => { const r = h / 2, x = w / 2 - r; return `M${-x} ${-r}H${x}A${r} ${r} 0 0 1 ${x} ${r}H${-x}A${r} ${r} 0 0 1 ${-x} ${-r}Z`; };
+const SH = {
+  round: sample(circle(24.5)),
+  big: sample(circle(27.5)),
+  happy: sample('M-25 13A25 29 0 0 1 25 13L11 13A11 14 0 0 0 -11 13Z'),
+  chevR: sample('M-18 -21.5L16 -4.5Q20.5 0 16 4.5L-18 21.5L-18 8L2.5 0L-18 -8Z'),
+  chevL: sample('M18 -21.5L-16 -4.5Q-20.5 0 -16 4.5L18 21.5L18 8L-2.5 0L18 -8Z'),
+  dash: sample(pill(43, 12)),
+  dashThin: sample(pill(40, 8)),
+  mouthD: sample('M-24 -12.5H24C24 3 13.5 14.5 0 14.5C-13.5 14.5 -24 3 -24 -12.5Z'),
+  mouthPill: sample(pill(45, 19)),
+  mouthSmall: sample(pill(24, 9)),
+  mouthO: sample(ell(11, 13.5)),
+};
+
+/* ---------- expressions (face coords relative to visor centre) ---------- */
+const THEMES = {
+  blue: { bgTop: '#2f4aa2', bgMid: '#262b75', bgBot: '#1e0c3a', glowBg: '#5d9cf0', glowA: .22, ring: '#8cc4ff', ringA: 1,
+    shTop: '#e8f1fc', rTop: '#7aaee5', rHi: '#c2cbdd', rTL: '#90b4ea', rTR: '#c9dbf3', rSide: '#959cc4', rBot: '#7077ac',
+    lipTop: '#5f7298', lipBot: '#d0e2f0', chin: '#8b90bd', chinLo: '#5f6d9e', rimBot: '#3e6fa3',
+    earCap: '#f3eaef', earBody: '#d3cee0', ball: '#e4e6f1', ballLo: '#c9d1e1', stem: '#96a7bf', base: '#efeef4',
+    visTop: '#08172a', visBot: '#0d101f', visHaze: '#4c505e', led: '#fff6da', glow: '#e7862c', edge: '#f1ce91', shadow: 'rgba(30,12,58,.4)' },
+  orange: { bgTop: '#ac3519', bgMid: '#922413', bgBot: '#6d120a', glowBg: '#ef7a3a', glowA: .22, ring: '#ffb070', ringA: 1,
+    shTop: '#f3eefa', rTop: '#adaade', rHi: '#f4e8f1', rTL: '#b9b1e4', rTR: '#e1d7f0', rSide: '#b793a8', rBot: '#996f89',
+    lipTop: '#cbaeb0', lipBot: '#f7e4e6', chin: '#ad86a3', chinLo: '#8d5765', rimBot: '#923334',
+    earCap: '#f9eaeb', earBody: '#e3c6d1', ball: '#f5e5ef', ballLo: '#e3cfd9', stem: '#bda1a5', base: '#f9ecf1',
+    visTop: '#141423', visBot: '#1a0d17', visHaze: '#6e4640', led: '#ffdcae', glow: '#ff5a1e', edge: '#ee7a48', shadow: 'rgba(109,18,10,.4)' },
+  green: { bgTop: '#4daa54', bgMid: '#3c884a', bgBot: '#285f3e', glowBg: '#86e070', glowA: .22, ring: '#b0f090', ringA: 1,
+    shTop: '#e0f4fb', rTop: '#6fbde0', rHi: '#daf1f6', rTL: '#7cc4e8', rTR: '#bce2f4', rSide: '#77adb8', rBot: '#558ba0',
+    lipTop: '#9bc2b9', lipBot: '#deefee', chin: '#69a0b6', chinLo: '#467281', rimBot: '#41876b',
+    earCap: '#e3f2f1', earBody: '#b8d7db', ball: '#d7eef3', ballLo: '#baddde', stem: '#86b6ad', base: '#e1f3f6',
+    visTop: '#061c1f', visBot: '#051519', visHaze: '#38604f', led: '#eaffc8', glow: '#8ee34c', edge: '#bbf36c', shadow: 'rgba(40,95,62,.4)' },
+  grey: { bgTop: '#7c7c7c', bgMid: '#5f5f5f', bgBot: '#2f2f2f', glowBg: '#e6e6e6', glowA: .8, ring: '#e8e8e8', ringA: 0,
+    shTop: '#f1f1f1', rTop: '#b1b1b1', rHi: '#eeeeee', rTL: '#b8b8b8', rTR: '#dadada', rSide: '#a0a0a0', rBot: '#7b7c80',
+    lipTop: '#b3b3b3', lipBot: '#e2dcd7', chin: '#89898d', chinLo: '#66676a', rimBot: '#5a5a5d',
+    earCap: '#ededed', earBody: '#d2d2d2', ball: '#e9e9e9', ballLo: '#d6d6d6', stem: '#b0b0b0', base: '#f0f0f0',
+    visTop: '#161616', visBot: '#111112', visHaze: '#3e3e3e', led: '#f4f4f4', glow: '#8a8a8a', edge: '#a8a8a8', shadow: 'rgba(30,30,30,.4)' },
+};
+THEMES.sleepy = Object.assign({}, THEMES.grey, { ringA: .3, glowA: .6, led: '#e8e8e8' });
+THEMES.surprised = Object.assign({}, THEMES.blue, { glow: '#ffb03a' });
+const EYE_L = [-64, 0.2], EYE_R = [68.5, 1], MOUTH = [1.5, 29];
+const EX = {
+  normal:    { name: 'Normal',   theme: 'blue',      eL: 'round', eR: 'round', m: 'mouthD',    eDX: 0,   eDY: 0 },
+  happy:     { name: 'Happy',   theme: 'orange',    eL: 'happy', eR: 'happy', m: 'mouthD',    eDX: 0,   eDY: -6 },
+  excited:   { name: 'Excited',   theme: 'green',     eL: 'chevR', eR: 'chevL', m: 'mouthD',    eDX: 9.5, eDY: 1 },
+  sleepy:    { name: 'Sleepy',   theme: 'sleepy',    eL: 'dashThin', eR: 'dashThin', m: 'mouthSmall', eDX: 0, eDY: 6 },
+  annoyed:   { name: 'Annoyed', theme: 'grey',      eL: 'dash',  eR: 'dash',  m: 'mouthPill', eDX: 0,   eDY: 0 },
+  surprised: { name: 'Surprised',   theme: 'surprised', eL: 'big',   eR: 'big',   m: 'mouthO',    eDX: 0,   eDY: -3 },
+};
+const ORDER = ['normal', 'happy', 'excited', 'sleepy', 'annoyed', 'surprised'];
+
+/* ---------- theme colour morph ---------- */
+const parse = c => { if (typeof c === 'number') return [c, 0, 0, 1]; if (c[0] === '#') return [parseInt(c.substr(1, 2), 16), parseInt(c.substr(3, 2), 16), parseInt(c.substr(5, 2), 16), 1];
+  const m = c.match(/[\d.]+/g).map(Number); return [m[0], m[1], m[2], m[3] ?? 1]; };
+const KEYS = Object.keys(THEMES.blue);
+const curT = {}, tgtT = {};
+const setTarget = name => KEYS.forEach(k => tgtT[k] = parse(THEMES[name][k]));
+KEYS.forEach(k => curT[k] = parse(THEMES.blue[k])); setTarget('blue');
+const rs = document.documentElement.style;
+function applyTheme() { KEYS.forEach(k => { const a = curT[k];
+  rs.setProperty('--' + k, (k === 'ringA' || k === 'glowA') ? a[0].toFixed(3) : `rgba(${a[0] | 0},${a[1] | 0},${a[2] | 0},${a[3].toFixed(3)})`); }); }
+
+/* ---------- face state ---------- */
+const cp = s => s.map(p => p.slice());
+const cur = { eL: cp(SH.round), eR: cp(SH.round), m: cp(SH.mouthD), dx: 0, dy: 0 };
+const lerpPts = (a, b, t) => { for (let i = 0; i < N; i++) { a[i][0] = L(a[i][0], b[i][0], t); a[i][1] = L(a[i][1], b[i][1], t); } };
+function toD(pts, ox, oy, sy) { let d = ''; for (let i = 0; i < N; i++) d += (i ? 'L' : 'M') + (ox + pts[i][0]).toFixed(2) + ' ' + (oy + pts[i][1] * sy).toFixed(2); return d + 'Z'; }
+
+/* ---------- input ---------- */
+const stage = $('stage');
+const ptr = { x: 0, y: 0, has: false };
+let lastMove = performance.now(), speed = 0, lastPX = 0, lastPY = 0, lastPT = performance.now();
+let mode = 'auto', expr = 'normal', exprUntil = 0, holdExpr = null, clicks = [], wasSleepy = false, kick = 0;
+function hold(n, ms) { holdExpr = n; exprUntil = performance.now() + ms; }
+function onMove(x, y) {
+  const now = performance.now(), dt = Math.max(8, now - lastPT);
+  const v = Math.hypot(x - lastPX, y - lastPY) / dt * 1000;
+  if (ptr.has && dt < 300) speed = Math.max(speed * .8, v * .5 + speed * .5);
+  lastPX = x; lastPY = y; lastPT = now; ptr.x = x; ptr.y = y; ptr.has = true;
+  if (wasSleepy && mode === 'auto') { hold('surprised', 700); wasSleepy = false; }
+  lastMove = now;
+}
+addEventListener('pointermove', e => onMove(e.clientX, e.clientY), { passive: true });
+addEventListener('pointerdown', e => {
+  if (e.target.closest('.controls')) return;
+  onMove(e.clientX, e.clientY);
+  const now = performance.now(); clicks = clicks.filter(t => now - t < 1600); clicks.push(now);
+  if (mode !== 'auto') return;
+  if (clicks.length >= 4) hold('annoyed', 2600); else hold('surprised', 900);
+  kick = 1;
+});
+
+/* ---------- elements ---------- */
+const eL = $('eL'), eR = $('eR'), mo = $('mo'), bobEl = $('bob'), zzz = $('zzz'), zs = [$('z1'), $('z2'), $('z3')], bolts = $('bolts'), pulse = $('pulse');
+const S = { lx: 0, ly: 0, bx: 0, by: 0, zz: 0, bolt: 0 };
+let blink = 1, nextBlink = performance.now() + 2500, blinkT = -1, prevExpr = '', last = performance.now(), forced = null, snap = false;
+
+function pickExpr(now) {
+  if (mode !== 'auto') return mode;
+  if (holdExpr && now < exprUntil) return holdExpr;
+  holdExpr = null;
+  if (now - lastMove > 3000) { wasSleepy = true; return 'sleepy'; }
+  if (speed > 1600) { hold('excited', 1100); return 'excited'; }
+  const r = stage.getBoundingClientRect();
+  if (ptr.has && Math.hypot(ptr.x - (r.left + r.width / 2), ptr.y - (r.top + r.height / 2)) < r.width * .55) return 'happy';
+  return 'normal';
+}
+
+function frame(now) {
+  const dt = Math.min(64, now - last) / 16.667; last = now;
+  const k = f => snap ? 1 : 1 - Math.pow(1 - f, dt);
+  speed *= Math.pow(.9, dt);
+  expr = pickExpr(now);
+  if (expr !== prevExpr) { setTarget(EX[expr].theme); prevExpr = expr; }
+  const E = EX[expr], t = now / 1000;
+
+  /* eye tracking: only the LED face moves, head stays put */
+  const r = stage.getBoundingClientRect(), u = r.width / 434;
+  const vcx = r.left + 217 * u, vcy = r.top + 223 * u;
+  let nx = 0, ny = 0;
+  if (ptr.has) { nx = (ptr.x - vcx) / (r.width * .6); ny = (ptr.y - vcy) / (r.height * .6); }
+  if (forced) { nx = forced[0]; ny = forced[1]; }
+  const len = Math.hypot(nx, ny); if (len > 1) { nx /= len; ny /= len; }
+  if (expr === 'sleepy') { nx = 0; ny = .3; }
+  S.lx = L(S.lx, nx, k(.14)); S.ly = L(S.ly, ny, k(.14));
+
+  /* subtle 2D bob only */
+  let tbx = 0, tby = Math.sin(t * 1.6) * 1.4;
+  if (expr === 'happy') tby = Math.sin(t * 5) * 2.2;
+  else if (expr === 'excited') { tbx = Math.sin(t * 31) * .9; tby = Math.sin(t * 17) * 1.4; }
+  else if (expr === 'annoyed') tbx = Math.sin(t * 43) * .8;
+  else if (expr === 'sleepy') tby = 3 + Math.sin(t * 1.2) * 1.6;
+  if (kick > .001) { tby -= kick * 4; kick *= Math.pow(.86, dt); }
+  S.bx = L(S.bx, tbx, k(.25)); S.by = L(S.by, tby, k(.2));
+  bobEl.setAttribute('transform', `translate(${S.bx.toFixed(2)} ${S.by.toFixed(2)})`);
+
+  /* blink */
+  if (now > nextBlink && blinkT < 0) blinkT = now;
+  if (blinkT >= 0) { const p = (now - blinkT) / 170; blink = p < .5 ? 1 - p * 2 * .9 : .1 + (p - .5) * 2 * .9;
+    if (p >= 1) { blink = 1; blinkT = -1; nextBlink = now + 2400 + Math.random() * 3000; if (Math.random() < .2) nextBlink = now + 200; } }
+  const bl = (expr === 'normal' || expr === 'surprised') && !snap ? blink : 1;
+
+  /* morph */
+  const m = k(.22);
+  lerpPts(cur.eL, SH[E.eL], m); lerpPts(cur.eR, SH[E.eR], m); lerpPts(cur.m, SH[E.m], m);
+  cur.dx = L(cur.dx, E.eDX, m); cur.dy = L(cur.dy, E.eDY, m);
+  const fx = S.lx * 14, fy = S.ly * 9;     // eyes travel
+  eL.setAttribute('d', toD(cur.eL, EYE_L[0] + cur.dx + fx, EYE_L[1] + cur.dy + fy, bl));
+  eR.setAttribute('d', toD(cur.eR, EYE_R[0] - cur.dx + fx, EYE_R[1] + cur.dy + fy, bl));
+  eL.setAttribute('transform', ''); 
+  mo.setAttribute('d', toD(cur.m, MOUTH[0] + fx * .55, MOUTH[1] + fy * .55, 1));
+
+  /* theme */
+  const ct = k(.07);
+  KEYS.forEach(key => { const a = curT[key], b = tgtT[key]; for (let i = 0; i < 4; i++) a[i] = Math.abs(a[i] - b[i]) < .02 ? b[i] : L(a[i], b[i], ct); });
+  applyTheme();
+
+  /* fx */
+  S.zz = L(S.zz, expr === 'sleepy' ? 1 : 0, k(expr === 'sleepy' ? .05 : .2)); zzz.setAttribute('opacity', S.zz.toFixed(3));
+  if (S.zz > .01) zs.forEach((z, i) => { const ph = (t * .45 + i * .33) % 1;
+    z.setAttribute('transform', `translate(${(ph * 12 - 5).toFixed(1)} ${(-ph * 22 + 8).toFixed(1)})`); z.setAttribute('opacity', Math.sin(ph * Math.PI).toFixed(3)); });
+  S.bolt = L(S.bolt, expr === 'annoyed' ? 1 : 0, k(.15));
+  bolts.setAttribute('opacity', (S.bolt * (snap ? 1 : .85 + .15 * Math.sin(t * 26))).toFixed(3));
+  $('boltWrap').setAttribute('transform', `scale(${(.85 + .15 * S.bolt + (snap ? 0 : Math.sin(t * 9) * .015)).toFixed(3)})`);
+  // radio pulse from antenna
+  if (!snap) { const ph = (t * .45) % 1; pulse.setAttribute('r', (60 + ph * 140).toFixed(1)); pulse.setAttribute('opacity', (Math.sin(ph * Math.PI) * .25).toFixed(3)); }
+  else pulse.setAttribute('opacity', 0);
+
+  if (running && !document.hidden && !reduced.matches) raf = requestAnimationFrame(frame);
+}
+
+applyTheme();
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+let running = true, raf = 0;
+function sync() {
+  cancelAnimationFrame(raf);
+  if (running && !document.hidden) { last = performance.now(); snap = reduced.matches; raf = requestAnimationFrame(frame); }
+}
+addEventListener('message', event => {
+  if (event.source !== parent || event.data?.type !== 'motion-playground') return;
+  running = !!event.data.active; sync();
+});
+document.addEventListener('visibilitychange', sync);
+reduced.addEventListener('change', sync);
+sync();
+})();
+</script>
+</body>
+</html>
